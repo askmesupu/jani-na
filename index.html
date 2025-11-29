@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HourGlass — Premium Watches</title>
+
+  <!-- Fonts: Minecraft-like (Press Start 2P) and Chalk-like for logo -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Base / Reset ---------- */
+    :root{
+      --bg: #000;
+      --muted-white: rgba(255,255,255,0.92);
+      --muted-white-2: rgba(255,255,255,0.7);
+      --accent: #fff;
+      --card-bg: rgba(255,255,255,0.03);
+      --glass: rgba(255,255,255,0.03);
+      --buy-bg: #fff;
+      --buy-text: #000;
+      --add-bg: transparent;
+      --add-text: #fff;
+      --success: #28a745;
+      --danger: #dc3545;
+      --footer-highlight: #ffeb3b;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;}
+    body{
+      background:var(--bg);
+      color:var(--muted-white);
+      font-family: 'Press Start 2P', monospace; /* pixel font for body text */
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.2;
+      overflow-x:hidden;
+    }
+
+    /* ---------- Header ---------- */
+    header{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:72px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:60;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-bottom:1px solid rgba(255,255,255,0.03);
+      padding:0 16px;
+    }
+    .header-inner{
+      width:1200px;
+      max-width:calc(100% - 40px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:16px;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      justify-content:center;
+    }
+    .logo-wrap img{
+      width:56px;
+      height:56px;
+      object-fit:cover;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.06);
+      background:rgba(255,255,255,0.02);
+    }
+    /* Chalk style logo text (larger, centered) */
+    .logo-text{
+      font-family:'Gloria Hallelujah', cursive;
+      font-size:26px;
+      color:var(--accent);
+      letter-spacing:1px;
+      transform:translateY(1px);
+    }
+
+    /* ---------- Hamburger + Sidebar ---------- */
+    .nav-toggle{
+      position:fixed;
+      top:18px;
+      left:18px;
+      width:48px;
+      height:48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:80;
+      cursor:pointer;
+      background:transparent;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    /* Hamburger bars */
+    .hamburger{
+      width:26px;height:18px;position:relative;
+      display:inline-block;
+    }
+    .hamburger span{
+      position:absolute;
+      left:0;right:0;height:3px;background:#fff;border-radius:3px;
+      transition:transform .35s cubic-bezier(.2,.9,.3,1),opacity .2s;
+    }
+    .hamburger span:nth-child(1){top:0;}
+    .hamburger span:nth-child(2){top:7.5px;}
+    .hamburger span:nth-child(3){top:15px;}
+
+    /* transform to cross when active */
+    .nav-toggle.open .hamburger span:nth-child(1){
+      transform: translateY(7.5px) rotate(45deg);
+    }
+    .nav-toggle.open .hamburger span:nth-child(2){
+      opacity:0;
+    }
+    .nav-toggle.open .hamburger span:nth-child(3){
+      transform: translateY(-7.5px) rotate(-45deg);
+    }
+
+    /* Sidebar */
+    .sidebar{
+      position:fixed;
+      left:-320px;
+      top:0;
+      width:320px;
+      height:100vh;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: 8px 0 30px rgba(0,0,0,0.6);
+      z-index:75;
+      transition:left .35s ease;
+      padding:80px 24px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .sidebar.open{left:0}
+
+    .sidebar nav{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+    }
+    .menu-list{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      text-align:center;
+    }
+    .menu-list a{
+      color:var(--accent);
+      text-decoration:none;
+      font-size:14px;
+      padding:10px 18px;
+      border-radius:8px;
+      display:inline-block;
+      transition:background .18s, transform .18s;
+    }
+    .menu-list a:hover{background:rgba(255,255,255,0.03); transform:translateY(-2px)}
+    .menu-list .muted{color:var(--muted-white-2); font-size:12px}
+
+    /* ---------- Layout ---------- */
+    main{
+      padding-top:92px;
+      width:1200px;
+      max-width:calc(100% - 40px);
+      margin:0 auto 96px;
+      transition:filter .2s;
+    }
+
+    .section{
+      margin:28px 0;
+    }
+    .section h2{
+      font-size:18px;
+      margin-bottom:14px;
+      color:var(--accent);
+    }
+
+    /* ---------- Watch grid & cards ---------- */
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+    .card{
+      background:var(--card-bg);
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.03);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      transition:transform .18s, box-shadow .18s, opacity .6s;
+      opacity:0;
+      transform:translateY(8px);
+    }
+    .card.visible{
+      opacity:1;
+      transform:none;
+    }
+
+    .card .img-wrap{
+      width:100%;
+      aspect-ratio:1.6/1;
+      background:#111;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:10px;
+      overflow:hidden;
+      position:relative;
+      cursor:pointer;
+    }
+    .card img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+    .card .title{font-size:12px; color:var(--accent)}
+    .price-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .price{
+      color:var(--muted-white);
+      font-size:12px;
+    }
+    .original{
+      font-size:10px;
+      color:var(--muted-white-2);
+      text-decoration:line-through;
+      opacity:0.8;
+    }
+    .discount{
+      font-size:11px;
+      color:var(--success);
+      font-weight:700;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:8px;
+      margin-top:6px;
+    }
+    .btn{
+      padding:10px 12px;
+      border-radius:8px;
+      font-size:12px;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    .buy-now{
+      background:var(--buy-bg);
+      color:var(--buy-text);
+      flex:1;
+    }
+    .add-cart{
+      background:var(--add-bg);
+      color:var(--add-text);
+      flex:1;
+      border:1px solid rgba(255,255,255,0.12);
+    }
+
+    /* ---------- Details (modal) ---------- */
+    .details-modal{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      z-index:200;background:rgba(0,0,0,0.85);
+    }
+    .details-modal.open{display:flex}
+    .details-inner{
+      width:min(1100px,96%);
+      height:min(80vh,820px);
+      background:transparent;
+      display:flex;
+      gap:16px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .carousel{
+      flex:1;
+      background:transparent;
+      overflow-x:auto;
+      display:flex;
+      gap:12px;
+      padding:8px;
+      scroll-behavior:smooth;
+    }
+    .carousel img{height:360px; width:auto; border-radius:10px; object-fit:cover; cursor:pointer}
+    .details-meta{
+      width:320px;
+      background:var(--card-bg);
+      padding:14px;border-radius:10px;
+      display:flex;flex-direction:column;gap:8px;
+    }
+    .close-details{
+      position:absolute;top:24px;right:24px;font-size:18px;background:transparent;border:none;color:white;cursor:pointer;
+    }
+
+    /* fullscreen image viewer */
+    .fs-viewer{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:210;background:rgba(0,0,0,0.95);
+    }
+    .fs-viewer.open{display:flex}
+    .fs-viewer img{max-width:95%;max-height:95%;transition:transform .15s ease}
+
+    /* ---------- Cart (floating panel / page) ---------- */
+    .cart-panel{
+      margin-top:12px;
+      background:var(--card-bg);
+      padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);
+    }
+    .cart-items{display:flex;flex-direction:column;gap:10px}
+    .cart-item{display:flex;gap:12px;align-items:center}
+    .cart-item img{width:64px;height:48px;object-fit:cover;border-radius:6px}
+    .cart-item .meta{flex:1}
+    .total-row{display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.03)}
+    .muted-text{color:var(--muted-white-2);font-size:12px}
+
+    /* inputs for checkout */
+    input[type=text], input[type=tel], textarea, select{
+      background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted-white);padding:8px;border-radius:8px;font-family:inherit;font-size:12px;
+    }
+    textarea{min-height:80px;resize:vertical}
+
+    /* admin panel */
+    .admin-screen{
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)
+    }
+    .admin-grid{display:grid;grid-template-columns:1fr 360px;gap:12px}
+    .product-list{display:flex;flex-direction:column;gap:8px}
+    .product-row{display:flex;gap:8px;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)}
+    .product-row img{width:64px;height:48px;object-fit:cover;border-radius:6px}
+    .small{font-size:11px;color:var(--muted-white-2)}
+
+    /* ---------- Footer ---------- */
+    footer{position:fixed;left:0;right:0;bottom:0;padding:12px 0;background:linear-gradient(180deg,transparent, rgba(0,0,0,0.4));text-align:center;z-index:50}
+    footer .dev{font-weight:800;color:var(--muted-white);background:var(--footer-highlight);padding:6px 12px;border-radius:6px;display:inline-block}
+
+    /* ---------- Responsive ---------- */
+    @media (max-width:1000px){
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .header-inner{max-width:100%}
+      .logo-text{font-size:20px}
+    }
+    @media (max-width:640px){
+      header{height:64px}
+      .nav-toggle{top:10px;left:10px}
+      .header-inner{padding:0 12px}
+      .logo-wrap img{width:48px;height:48px}
+      .logo-text{font-size:18px}
+      .grid{grid-template-columns:1fr}
+      .carousel img{height:220px}
+      .details-meta{display:none}
+      .sidebar{width:100%;left:-100%}
+      .sidebar.open{left:0}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="nav-toggle" id="navToggle" aria-label="Open menu" title="Menu">
+    <div class="hamburger"><span></span><span></span><span></span></div>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo-wrap" style="pointer-events:none">
+        <img src="https://i.ibb.co/d430dV52/20251104-154152.jpg" alt="HourGlass logo" />
+        <div class="logo-text">HourGlass</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <nav>
+      <div class="menu-list" id="menuList">
+        <a href="#" data-nav="home">Home</a>
+        <a href="#" data-nav="cart">Cart <span class="small muted">(<span id="cartCount">0</span>)</span></a>
+        <a href="#" data-nav="men">Men's Watches</a>
+        <a href="#" data-nav="women">Women's Watches</a>
+        <a href="#" data-nav="top">Top Selling Watches</a>
+        <a href="#" data-nav="popular">Popular Watches</a>
+        <a href="#" data-nav="admin">Admin Panel (login)</a>
+        <a href="https://www.facebook.com/share/19kuqxexRV/" target="_blank">HourGlass Facebook</a>
+        <a href="https://www.facebook.com/share/17gJ18d9n4/" target="_blank">Developer Contact</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main id="appMain">
+    <!-- Top selling section -->
+    <section class="section" id="topSellingSection">
+      <h2>Top Selling Watches</h2>
+      <div class="grid" id="topGrid"></div>
+    </section>
+
+    <!-- Categories -->
+    <section class="section" id="allCategories">
+      <h2>All Watches</h2>
+      <div class="grid" id="allGrid"></div>
+    </section>
+
+    <!-- Cart / Checkout area -->
+    <section class="section" id="cartSection" style="display:none;">
+      <h2>Your Cart</h2>
+      <div class="cart-panel" id="cartPanel">
+        <div class="cart-items" id="cartItems"></div>
+
+        <div style="margin-top:12px;display:flex;gap:12px;flex-direction:column;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label class="small">Delivery:</label>
+            <select id="deliveryZone">
+              <option value="dhaka">Inside Dhaka — 70 BDT</option>
+              <option value="outside">Outside Dhaka — 100 BDT</option>
+            </select>
+            <label class="small">Payment:</label>
+            <select id="paymentMethod">
+              <option value="cod">Cash on Delivery (COD)</option>
+              <option value="bkash">Bkash</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="couponInput" placeholder="Coupon code (optional)" />
+            <button class="btn buy-now" id="applyCoupon">Apply</button>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-direction:column;">
+            <input type="text" id="custName" placeholder="Full name" />
+            <input type="tel" id="custNumber" placeholder="Phone number" />
+            <textarea id="custAddress" placeholder="Delivery address"></textarea>
+            <div class="total-row">
+              <div>
+                <div class="small">Subtotal</div>
+                <div id="subtotalText">0 BDT</div>
+              </div>
+              <div style="text-align:right">
+                <div class="small">Total</div>
+                <div id="totalText" style="font-weight:700">0 BDT</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button class="btn add-cart" id="clearCart">Clear Cart</button>
+              <button class="btn buy-now" id="placeOrder">Place Order</button>
+            </div>
+            <div id="couponNotice" class="small muted-text"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Admin -->
+    <section class="section" id="adminSection" style="display:none;">
+      <h2>Admin Panel</h2>
+      <div class="admin-screen" id="adminScreen">
+        <div id="adminLoginWrap">
+          <div style="display:flex;flex-direction:column;gap:8px;max-width:360px">
+            <div class="small">Please login</div>
+            <input id="adminUsername" placeholder="Username"/>
+            <input id="adminPassword" placeholder="Password" type="password"/>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button class="btn add-cart" id="adminCancel">Cancel</button>
+              <button class="btn buy-now" id="adminLogin">Login</button>
+            </div>
+            <div class="small muted-text">Note: username changed from original request to avoid offensive words. Using <strong>hourglass_admin</strong> and password <strong>instantrice2010</strong></div>
+          </div>
+        </div>
+
+        <div id="adminConsole" style="display:none;">
+          <div class="admin-grid">
+            <div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                <input id="pName" placeholder="Watch name"/>
+                <input id="pPrice" placeholder="Price (BDT)" type="number"/>
+                <input id="pOrig" placeholder="Original price (BDT)" type="number"/>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                <input id="pImage" placeholder="Image URL (comma separated for multiple)"/>
+                <input id="pCategory" placeholder="Category (men/women/popular)"/>
+              </div>
+              <textarea id="pDesc" placeholder="Description"></textarea>
+              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+                <button class="btn add-cart" id="resetForm">Reset</button>
+                <button class="btn buy-now" id="addProduct">Add / Update Watch</button>
+              </div>
+
+              <h3 style="margin-top:14px;font-size:14px">Existing Watches</h3>
+              <div class="product-list" id="adminProductList"></div>
+            </div>
+
+            <aside>
+              <div style="background:var(--card-bg);padding:12px;border-radius:8px">
+                <h4 style="font-size:12px">Coupons</h4>
+                <div style="display:flex;gap:8px;margin-bottom:8px">
+                  <input id="cCode" placeholder="Code" />
+                  <input id="cVal" placeholder="Discount BDT (0 disables)" type="number" />
+                </div>
+                <div style="display:flex;gap:8px;justify-content:flex-end">
+                  <button class="btn add-cart" id="clearCoupons">Clear</button>
+                  <button class="btn buy-now" id="addCoupon">Add Coupon</button>
+                </div>
+                <div id="couponList" style="margin-top:8px"></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Details modal (images & details) -->
+  <div class="details-modal" id="detailsModal" aria-hidden="true">
+    <button class="close-details" id="closeDetails">✕</button>
+    <div class="details-inner" id="detailsInner">
+      <div class="carousel" id="detailsCarousel"></div>
+      <div class="details-meta" id="detailsMeta">
+        <div id="detailsTitle" style="font-size:14px"></div>
+        <div class="small muted-text" id="detailsDesc"></div>
+        <div style="margin-top:10px" id="detailsPrices"></div>
+        <div style="margin-top:12px" class="btn-row">
+          <button class="btn buy-now" id="detailsBuy">Buy Now</button>
+          <button class="btn add-cart" id="detailsAdd">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen image viewer -->
+  <div class="fs-viewer" id="fsViewer">
+    <img id="fsImg" src="" alt="Full image"/>
+  </div>
+
+  <footer>
+    <div class="dev">Developed by Supto</div>
+  </footer>
+
+<script>
+/* ---------- Data layer (localStorage) ---------- */
+const STORAGE_KEYS = {
+  PRODUCTS: 'hg_products_v1',
+  CART: 'hg_cart_v1',
+  COUPONS: 'hg_coupons_v1'
+};
+
+const DEFAULT_PRODUCTS = [
+  {
+    id: 'p-1', title:'Classic Chrono', price:4200, original:5200, category:'men', images:['https://i.ibb.co/3yY4b0C/watch1.jpg'], desc:'Classic men chronograph, stainless steel.', top:true
+  },
+  {
+    id: 'p-2', title:'Elegance Rose', price:5800, original:0, category:'women', images:['https://i.ibb.co/bz7kS6s/watch2.jpg'], desc:'Rose-gold plated women watch.', top:true
+  },
+  {
+    id: 'p-3', title:'Sport Runner', price:3500, original:4500, category:'men', images:['https://i.ibb.co/mJp9R4f/watch3.jpg'], desc:'Water resistant sport watch.', desc:'Water resistant sport watch.', top:false, category:'popular'
+  }
+];
+function load(key, fallback){ try{return JSON.parse(localStorage.getItem(key)) || fallback;}catch(e){return fallback}}
+function save(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+
+let products = load(STORAGE_KEYS.PRODUCTS, null);
+if(!products){ products = DEFAULT_PRODUCTS; save(STORAGE_KEYS.PRODUCTS, products); }
+let cart = load(STORAGE_KEYS.CART, []);
+let coupons = load(STORAGE_KEYS.COUPONS, []);
+
+function uid(prefix='id'){ return prefix + '-' + Math.random().toString(36).slice(2,9); }
+
+/* ---------- UI Hooks ---------- */
+const navToggle = document.getElementById('navToggle');
+const sidebar = document.getElementById('sidebar');
+const menuList = document.getElementById('menuList');
+const topGrid = document.getElementById('topGrid');
+const allGrid = document.getElementById('allGrid');
+const 
